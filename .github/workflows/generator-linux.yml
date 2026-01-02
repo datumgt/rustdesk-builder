@@ -657,13 +657,13 @@ jobs:
   build-appimage:
     name: Build appimage ${{ matrix.job.target }}
     needs: [build-rustdesk-linux]
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.job.on }}
     strategy:
       fail-fast: false
       matrix:
         job:
-          - { target: x86_64-unknown-linux-gnu, arch: x86_64 }
-          - { target: aarch64-unknown-linux-gnu, arch: aarch64 }
+          - { target: x86_64-unknown-linux-gnu, arch: x86_64, distro: ubuntu18.04, on: ubuntu-22.04 }
+          - { target: aarch64-unknown-linux-gnu, arch: aarch64, distro: ubuntu18.04, on: ubuntu-22.04-arm }
     steps:
       - name: Checkout source code
         if: ${{ env.VERSION != 'master' }}
@@ -690,18 +690,28 @@ jobs:
         run: |
           mv ${{ inputs.filename }}-${{ matrix.job.arch }}.deb appimage/rustdesk.deb
 
-      - name: Build appimage package
-        shell: bash
-        run: |
-          # install libarchive-tools for bsdtar command used in AppImageBuilder.yml
-          sudo apt-get update -y
-          sudo apt-get install -y libarchive-tools libfuse2
-          # set-up appimage-builder
-          sudo pip3 install git+https://github.com/rustdesk-org/appimage-builder.git
-          # run appimage-builder
-          pushd appimage
-          sudo appimage-builder --skip-tests --recipe ./AppImageBuilder-${{ matrix.job.arch }}.yml
-          sudo mv ./rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.AppImage ./${{ inputs.filename }}-${{ matrix.job.arch }}.AppImage
+      - uses: rustdesk-org/run-on-arch-action@amd64-support
+        name: Build appimage package in ${{ matrix.job.distro }}
+        with:
+          arch: ${{ matrix.job.arch }}
+          distro: ${{ matrix.job.distro }}
+          githubToken: ${{ github.token }}
+          setup: |
+            ls -l "${PWD}"
+          dockerRunArgs: |
+            --volume "${PWD}:/workspace"
+          shell: /bin/bash
+          install: |
+            apt-get update -y
+            apt-get install -y libarchive-tools libfuse2 python3-pip git
+          run: |
+            cd /workspace
+            # set-up appimage-builder
+            pip3 install git+https://github.com/rustdesk-org/appimage-builder.git
+            # run appimage-builder
+            cd appimage
+            appimage-builder --skip-tests --recipe ./AppImageBuilder-${{ matrix.job.arch }}.yml
+            mv ./rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.AppImage ./${{ inputs.filename }}-${{ matrix.job.arch }}.AppImage
 
       - name: send file to rdgen server
         if: ${{ fromJson(inputs.extras).rdgen == 'true' }}
