@@ -222,6 +222,10 @@ jobs:
           sed -i '' -e 's/("About RustDesk", "Over RustDesk")/("About RustDesk", "Over ${{ inputs.appname }}")/' ./src/lang/nl.rs
           sed -i '' -e 's/("About", "Over")/("About", "Over ${{ inputs.appname }}")/' ./src/lang/nl.rs
 
+          # Update slogan - About in es.rs (Spanish)
+          sed -i '' -e 's/("Slogan_tip", "¡Hecho con el corazón en este mundo caótico!")/("Slogan_tip", "Powered by ${{ inputs.appname }}")/' ./src/lang/es.rs
+          sed -i '' -e 's/("About RustDesk", "Acerca de RustDesk")/("About RustDesk", "Acerca de ${{ inputs.appname }}")/' ./src/lang/es.rs
+
           sed -i -e 's|rs-ny.rustdesk.com|${{ inputs.server }}|' ./libs/hbb_common/src/config.rs
           sed -i -e 's|OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=|${{ inputs.key }}|' ./libs/hbb_common/src/config.rs
           sed -i -e 's|https://admin.rustdesk.com|${{ inputs.apiServer }}|' ./src/common.rs
@@ -468,6 +472,13 @@ jobs:
           sed -i -e 's|updateUrl.isNotEmpty|false|' ./flutter/lib/desktop/pages/desktop_home_page.dart
           sed -i '/let (request, url) =/,/Ok(())/{/Ok(())/!d}' ./src/common.rs
 
+      - name: Create custom.txt file
+        continue-on-error: false
+        shell: bash
+        run: |
+          echo -n "${{ inputs.custom }}" > ./custom.txt
+          echo "Created custom.txt with custom configuration"
+
       - name: Report Status
         uses: fjogeleit/http-request-action@v1
         with:
@@ -527,6 +538,17 @@ jobs:
           fi
           sed -i -e "s/RustDesk.app/\"${{ inputs.appname }}.app\"/" build.py
           ./build.py --flutter --hwcodec --unix-file-copy-paste ${{ matrix.job.extra-build-args }}
+
+      - name: Copy custom.txt to app bundle
+        continue-on-error: false
+        shell: bash
+        run: |
+          APP_BUNDLE="flutter/build/macos/Build/Products/Release/RustDesk.app"
+          RESOURCES_DIR="$APP_BUNDLE/Contents/Resources"
+          mkdir -p "$RESOURCES_DIR"
+          cp ./custom.txt "$RESOURCES_DIR/custom.txt"
+          echo "Copied custom.txt to $RESOURCES_DIR"
+          ls -la "$RESOURCES_DIR/custom.txt"
 
       # - name: Copy service file
       #   run: |
