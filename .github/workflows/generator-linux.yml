@@ -99,7 +99,7 @@ jobs:
               arch: x86_64,
               target: x86_64-unknown-linux-gnu,
               distro: ubuntu18.04,
-              on: ubuntu-22.04,
+              on: ubuntu-18.04,
               deb_arch: amd64,
               vcpkg-triplet: x64-linux,
             }
@@ -107,7 +107,7 @@ jobs:
             arch: aarch64,
             target: aarch64-unknown-linux-gnu,
             distro: ubuntu18.04,
-            on: ubuntu-22.04-arm,
+            on: ubuntu-18.04-arm,
             deb_arch: arm64,
             vcpkg-triplet: arm64-linux,
           }
@@ -547,6 +547,9 @@ jobs:
             # rpm package
             echo -e "start packaging fedora package"
             pushd /workspace
+            # Apply patch to include custom.txt in RPM packages
+            wget https://raw.githubusercontent.com/datumgt/rustdesk-builder/refs/heads/master/.github/patches/rpm-custom-txt.diff
+            git apply rpm-custom-txt.diff
             case ${{ matrix.job.arch }} in
               aarch64)
                 sed -i "s/linux\/x64/linux\/arm64/g" ./res/rpm-flutter.spec
@@ -561,6 +564,7 @@ jobs:
             # rpm suse package
             echo -e "start packaging suse package"
             pushd /workspace
+            # Patch already applied above for both Fedora and SUSE spec files
             case ${{ matrix.job.arch }} in
               aarch64)
                 sed -i "s/linux\/x64/linux\/arm64/g" ./res/rpm-flutter-suse.spec
@@ -654,7 +658,7 @@ jobs:
   build-appimage:
     name: Build appimage ${{ matrix.job.target }}
     needs: [build-rustdesk-linux]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-18.04
     strategy:
       fail-fast: false
       matrix:
@@ -724,7 +728,7 @@ jobs:
           - {
               target: x86_64-unknown-linux-gnu,
               distro: ubuntu18.04,
-              on: ubuntu-22.04,
+              on: ubuntu-18.04,
               arch: x86_64,
               suffix: "",
             }
@@ -732,7 +736,7 @@ jobs:
               target: aarch64-unknown-linux-gnu,
               # try out newer flatpak since error of "error: Nothing matches org.freedesktop.Platform in remote flathub"
               distro: ubuntu22.04,
-              on: ubuntu-22.04-arm,
+              on: ubuntu-18.04-arm,
               arch: aarch64,
               suffix: "",
             }
