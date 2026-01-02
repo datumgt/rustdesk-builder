@@ -547,9 +547,9 @@ jobs:
             # rpm package
             echo -e "start packaging fedora package"
             pushd /workspace
-            # Apply patch to include custom.txt in RPM packages
-            wget https://raw.githubusercontent.com/datumgt/rustdesk-builder/refs/heads/master/.github/patches/rpm-custom-txt.diff
-            git apply rpm-custom-txt.diff
+            # Add custom.txt installation to RPM spec files
+            sed -i '/mkdir -p "%{buildroot}\/usr\/share\/rustdesk"/a install -Dm 644 $HBB/custom.txt -t "%{buildroot}/usr/share/rustdesk"' ./res/rpm-flutter.spec
+            sed -i '/mkdir -p "%{buildroot}\/usr\/share\/rustdesk"/a install -Dm 644 $HBB/custom.txt -t "%{buildroot}/usr/share/rustdesk"' ./res/rpm-flutter-suse.spec
             case ${{ matrix.job.arch }} in
               aarch64)
                 sed -i "s/linux\/x64/linux\/arm64/g" ./res/rpm-flutter.spec
@@ -564,7 +564,6 @@ jobs:
             # rpm suse package
             echo -e "start packaging suse package"
             pushd /workspace
-            # Patch already applied above for both Fedora and SUSE spec files
             case ${{ matrix.job.arch }} in
               aarch64)
                 sed -i "s/linux\/x64/linux\/arm64/g" ./res/rpm-flutter-suse.spec
