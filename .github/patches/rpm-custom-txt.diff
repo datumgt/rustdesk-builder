@@ -2,9 +2,7 @@ diff --git a/res/rpm-flutter.spec b/res/rpm-flutter.spec
 index 1234567..abcdefg 100644
 --- a/res/rpm-flutter.spec
 +++ b/res/rpm-flutter.spec
-@@ -1,0 +1,0 @@
- %install
-
+@@ -20,2 +20,3 @@
  mkdir -p "%{buildroot}/usr/share/rustdesk" && cp -r ${HBB}/flutter/build/linux/x64/release/bundle/* -t "%{buildroot}/usr/share/rustdesk"
 +install -Dm 644 $HBB/custom.txt -t "%{buildroot}/usr/share/rustdesk"
  mkdir -p "%{buildroot}/usr/bin"
@@ -12,9 +10,7 @@ diff --git a/res/rpm-flutter-suse.spec b/res/rpm-flutter-suse.spec
 index 1234567..abcdefg 100644
 --- a/res/rpm-flutter-suse.spec
 +++ b/res/rpm-flutter-suse.spec
-@@ -1,0 +1,0 @@
- %install
-
+@@ -20,2 +20,3 @@
  mkdir -p "%{buildroot}/usr/share/rustdesk" && cp -r ${HBB}/flutter/build/linux/x64/release/bundle/* -t "%{buildroot}/usr/share/rustdesk"
 +install -Dm 644 $HBB/custom.txt -t "%{buildroot}/usr/share/rustdesk"
  mkdir -p "%{buildroot}/usr/bin"
